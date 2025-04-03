@@ -1,5 +1,13 @@
+'use client';
+
 import { Search, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
+import { Metadata } from 'next';
+import { useQueryState } from 'nuqs';
+// import Image from 'next/image';
+
+// export const metadata : Metadata = {
+//   title: 'Astral Take Home Challenge'
+// }
 
 // Define types for search results
 type SearchResultType = {
@@ -102,6 +110,8 @@ const SearchResults = ({ results }: { results: SearchResultType[] }) => {
 };
 
 export default function Home() {
+  const [search, setSearch] = useQueryState('search', { defaultValue: 'Volcanoes' });
+  const [grade, setGrade] = useQueryState('grade', { defaultValue: 'all' });
   return (
     <div className="flex flex-col items-center w-[600px] max-w-full mx-auto">
       <div className="px-4 flex-1 w-full mb-2">
@@ -110,7 +120,8 @@ export default function Home() {
           <input
             type="text"
             placeholder="Search..."
-            defaultValue="Volcanoes"
+            defaultValue={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none"
           />
           <button
@@ -125,7 +136,8 @@ export default function Home() {
         <div className="flex justify-start mb-6">
           <div className="relative">
             <select 
-              defaultValue="all"
+              defaultValue={grade}
+              onChange={(e) => setGrade(e.target.value)}
               className="appearance-none h-8 pl-3 pr-8 bg-[#f2f2f7] rounded-md text-sm text-[#1c1c1e] border border-[#e5e5ea] focus:outline-none focus:ring-1 focus:ring-[#8e8e93]"
             >
               {gradeOptions.map((grade) => (
