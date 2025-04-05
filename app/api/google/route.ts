@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY });
 
 export const runtime = 'edge';
 
@@ -13,7 +13,9 @@ export async function GET() {
           text: `
         Purpose and Goals:  
         * Search videos, resources, and interactive articles available for [greenhouse gases] for grade [6th] students on Khan Academy, CK12, PBS Learning and other relevant website. 
-        * Return the results in a well-structured format that is easy to understand and use. Make sure the links are not broken.
+        * Return the results in a well-structured format that is easy to understand and use. 
+        * Make sure the links are not broken.
+        * Always return the results in markdown format.
         `
         }]
       }],
@@ -23,19 +25,20 @@ export async function GET() {
           numResults: 5,
           filters: {
             time: 'any',
-            type: 'video',
+            type: ['video', 'article', 'interactive', 'game', 'worksheet'],
             siteSearch: ['khanacademy.org', 'ck12.org', 'pbslearningmedia.org'],
           },
         } }],
       },
     });
+    console.log('Response from Gemini:', response.candidates?.[0]?.groundingMetadata);
+
     const results = response.text;
-    // console.log("Response from Gemini:", results);
-    // console.log("Grounded Metadata from Gemini:", response.candidates?.[0]?.groundingMetadata);
+
     // Extract links from markdown-formatted text using regex
     // Match both [text](url) format and plain URLs
     const markdownLinkPattern = /\[.*?\]\((https?:\/\/[^\s)]+)\)|(?<![(\[])(https?:\/\/[^\s)"\]]+)/g;
-
+    
     // Extract all link matches from the results
     const links = [];
     const matches = results ? Array.from(results.matchAll(markdownLinkPattern)) : [];
@@ -48,8 +51,8 @@ export async function GET() {
 
     // Remove any duplicates
     const uniqueLinks = Array.from(new Set(links));
-    console.log('Links found:', uniqueLinks);
-    return Response.json({ res: uniqueLinks });
+    // console.log('Links found:', uniqueLinks);
+    return Response.json({ links: uniqueLinks, chunks: response.candidates?.[0]?.groundingMetadata }, { status: 200 });
   } catch (error) {
     console.error('Error generating content');
     console.error('Error Log:', error);
