@@ -40,7 +40,7 @@ export const SearchInterface = () => {
           type="text"
           placeholder="Volcanoes..."
           defaultValue={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}          
           className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none"
         />
         <button

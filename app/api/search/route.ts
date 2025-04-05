@@ -17,12 +17,21 @@ export async function GET(req: NextRequest) {
   
   // Extract Data
   if (query && grade) {
-    const ka = await khanacademy(query);
-    data.push(...ka);
-    const pbs = await pbslearning(query, grade);
-    data.push(...pbs);
-    const ck12_x = await ck12(query, grade);
-    data.push(...ck12_x);
+    const [kaResults, pbsResults, ck12Results] = await Promise.all([
+      khanacademy(query),
+      pbslearning(query, grade),
+      ck12(query, grade),
+    ]);
+    
+    // Add results with source information in one pass
+    const processedResults = [
+      ...(kaResults?.map((item: any) => ({ ...item, source: 'Khan Academy' })) || []),
+      ...(pbsResults?.map((item: any) => ({ ...item, source: 'PBS Learning' })) || []),
+      ...(ck12Results?.map((item: any) => ({ ...item, source: 'CK-12' })) || [])
+    ];
+    
+    // Filter out any undefined or null items and add to data
+    data.push(...processedResults.filter(Boolean));
   }
 
   return Response.json({ res: data }, { status: 200 });

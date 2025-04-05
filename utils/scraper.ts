@@ -4,7 +4,7 @@ import { BROWSERLESS_API_KEY, BROWSERLESS_ENDPOINT } from '@/lib/const';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 
-export async function browserScraper(url: string) {
+async function browserScraper(url: string) {
   const browser = await puppeteer.connect({
     browserWSEndpoint: `wss://${BROWSERLESS_ENDPOINT}?token=${BROWSERLESS_API_KEY}`,
   });
@@ -29,14 +29,14 @@ export async function browserScraper(url: string) {
 }
 
 export async function khanacademy(query: string) {
-  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${query}&content_kinds=Article%2CVideo%2CTopic`;
+  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${encodeURIComponent(query)}&content_kinds=Article%2CVideo%2CTopic`;
 
   const content = await browserScraper(url);
 
-  console.log('Page loaded, scraping content...');
+  // console.log('Page loaded, scraping content...');
   const $ = cheerio.load(content);
 
-  console.log('Content loaded, scraping results...');
+  // console.log('Content loaded, scraping results...');
 
   const data: any = [];
 
@@ -77,7 +77,7 @@ export async function pbslearning(query: string, grade: string) {
         return '';
     }
   })();
-  const url = `https://www.pbslearningmedia.org/search/?rank_by=recency&q=${query}&page=1` + (pbsGrade ? `&selected_facet=grades:=${pbsGrade}` : '');
+  const url = `https://www.pbslearningmedia.org/search/?rank_by=recency&q=${encodeURIComponent(query)}&page=1` + (pbsGrade ? `&selected_facet=grades:=${encodeURIComponent(pbsGrade)}` : '');
 
   const content = await browserScraper(url);
   const $ = cheerio.load(content);
@@ -127,7 +127,7 @@ export async function pbslearning(query: string, grade: string) {
 }
 
 export async function ck12(query: string, grade: string) {
-  const url = `https://www.ck12.org/search/?referrer=search&pageNum=1&tabId=communityContributedContentTab&gradeFilters=${grade}&q=${query}`;
+  const url = `https://www.ck12.org/search/?referrer=search&pageNum=1&tabId=communityContributedContentTab&gradeFilters=${encodeURIComponent(grade)}&q=${encodeURIComponent(query)}`;
 
   const content = await browserScraper(url);
 
