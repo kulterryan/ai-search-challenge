@@ -55,6 +55,7 @@ export async function khanacademy(query: string) {
         type,
         subject,
         description,
+        source: 'Khan Academy'
       });
     }
   });
@@ -63,21 +64,14 @@ export async function khanacademy(query: string) {
 }
 
 export async function pbslearning(query: string, grade: string) {
-  const pbsGrade = (() => {
-    // This needs to be updated to match the PBS Learning Media search API
-    if (grade === 'K') return 'K-2';
-    switch (grade) {
-      case '1':
-        return '3-5';
-      case '2':
-        return '6-8';
-      case '3':
-        return '9-12';
-      default:
-        return '';
-    }
-  })();
-  const url = `https://www.pbslearningmedia.org/search/?rank_by=recency&q=${encodeURIComponent(query)}&page=1` + (pbsGrade ? `&selected_facet=grades:=${encodeURIComponent(pbsGrade)}` : '');
+  const pbsGrade = grade === 'K' ? 'K-2' : 
+                  grade === '1' ? '3-5' : 
+                  grade === '2' ? '6-8' : 
+                  grade === '3' ? '9-12' : 
+                  grade === 'all' ? 'PreK-K,K-2,3-5,6-8,9-12' : '';
+                  
+  const url = `https://www.pbslearningmedia.org/search/?rank_by=relevance&q=${encodeURIComponent(query)}&page=1` + 
+              (pbsGrade ? `&selected_facet=grades:=${encodeURIComponent(pbsGrade)}` : '');
 
   const content = await browserScraper(url);
   const $ = cheerio.load(content);
@@ -118,6 +112,7 @@ export async function pbslearning(query: string, grade: string) {
         brand,
         grades,
         posterUrl,
+        source: 'PBS Learning'
       });
     }
   });
@@ -170,6 +165,7 @@ export async function ck12(query: string, grade: string) {
         difficulty,
         creator,
         subject,
+        source: 'CK-12'
       });
     }
   });

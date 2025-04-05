@@ -24,12 +24,12 @@ export async function GET(req: NextRequest) {
     ]);
     
     // Add results with source information in one pass
+    // More efficient - avoid unnecessary mapping when arrays already have the right structure
     const processedResults = [
-      ...(kaResults?.map((item: any) => ({ ...item, source: 'Khan Academy' })) || []),
-      ...(pbsResults?.map((item: any) => ({ ...item, source: 'PBS Learning' })) || []),
-      ...(ck12Results?.map((item: any) => ({ ...item, source: 'CK-12' })) || [])
+      ...(kaResults || []),
+      ...(pbsResults || []),
+      ...(ck12Results || [])
     ];
-    
     // Filter out any undefined or null items and add to data
     data.push(...processedResults.filter(Boolean));
   }
