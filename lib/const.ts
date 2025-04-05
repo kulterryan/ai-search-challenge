@@ -1,0 +1,4 @@
+const GOOGLE_GENERATIVE_AI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+if (!GOOGLE_GENERATIVE_AI_API_KEY) {
+  throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not defined');
+}
