@@ -4,16 +4,6 @@ import { BROWSERLESS_API_KEY, BROWSERLESS_ENDPOINT } from '@/lib/const';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 
-interface SearchResult {
-  title: string;
-  link: string;
-  description: string;
-  grades?: string[];
-  posterUrl?: string;
-  contentType?: string;
-  source: string;
-}
-
 async function browserScraper(url: string) {
   const browser = await puppeteer.connect({
     browserWSEndpoint: `wss://${BROWSERLESS_ENDPOINT}?token=${BROWSERLESS_API_KEY}`,

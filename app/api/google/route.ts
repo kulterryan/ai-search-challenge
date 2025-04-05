@@ -1,4 +1,5 @@
 import { GOOGLE_GENERATIVE_AI_API_KEY } from '@/lib/const';
+import { google_ai } from '@/utils/llm';
 import { GoogleGenAI } from '@google/genai';
 import { type NextRequest } from 'next/server';
 
@@ -21,9 +22,8 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: 'Grade parameter is required' }, { status: 400 });
   }
 
-  const ai = new GoogleGenAI({ apiKey: GOOGLE_GENERATIVE_AI_API_KEY });
   try {
-    const response = await ai.models.generateContent({
+    const response = await google_ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [
         {

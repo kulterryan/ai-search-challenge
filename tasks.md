@@ -1,7 +1,7 @@
 # PENDING TASKS
 
-- [ ] Secure Search Page
-- [ ] Save Scraped Data to Database
-- [ ] Query Search from Database (cap 20)
+- [x] Secure Search Page
+- [ ] Add Relevancy to the Scraped Data
+- [ ] Save Query Data to the Database
 - [ ] Add Pagination in Search Results
 - [ ] Animate the Search Agents Actions
