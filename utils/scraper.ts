@@ -4,6 +4,16 @@ import { BROWSERLESS_API_KEY, BROWSERLESS_ENDPOINT } from '@/lib/const';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 
+interface SearchResult {
+  title: string;
+  link: string;
+  description: string;
+  grades?: string[];
+  posterUrl?: string;
+  contentType?: string;
+  source: string;
+}
+
 async function browserScraper(url: string) {
   const browser = await puppeteer.connect({
     browserWSEndpoint: `wss://${BROWSERLESS_ENDPOINT}?token=${BROWSERLESS_API_KEY}`,
@@ -28,8 +38,10 @@ async function browserScraper(url: string) {
   return content;
 }
 
-export async function khanacademy(query: string) {
-  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${encodeURIComponent(query)}&content_kinds=Article%2CVideo%2CTopic`;
+export async function khanacademy(query: string, grade: string) {
+  const updatedQuery = query + ` for Grade ` + (grade === 'all' ? '' : grade);
+  // console.log('Updated query:', updatedQuery);
+  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${encodeURIComponent(updatedQuery)}&content_kinds=Exercise%2CVideo%2CTopic`;
 
   const content = await browserScraper(url);
 
@@ -38,24 +50,24 @@ export async function khanacademy(query: string) {
 
   // console.log('Content loaded, scraping results...');
 
-  const data: any = [];
+  const data: SearchResult[] = [];
 
   $('li').each((index, element) => {
     const $elem = $(element);
     const link = $elem.find('a').attr('href');
     const title = $elem.find('div._2dibcm7').text();
     const type = $elem.find('div._1ufuji7').text();
-    const subject = $elem.find('div._12itjrk5').text();
     const description = $elem.find('span._1n941cdr').text() || '';
 
     if (link && title) {
       data.push({
         title,
         link: `https://www.khanacademy.org${link}`,
-        type,
-        subject,
+        contentType: type,
+        grades: grade === 'all' ? [] : [grade],
+        posterUrl: $elem.find('img').attr('src') || '',
         description,
-        source: 'Khan Academy'
+        source: 'Khan Academy',
       });
     }
   });
@@ -64,20 +76,16 @@ export async function khanacademy(query: string) {
 }
 
 export async function pbslearning(query: string, grade: string) {
-  const pbsGrade = grade === 'K' ? 'K-2' : 
-                  grade === '1' ? '3-5' : 
-                  grade === '2' ? '6-8' : 
-                  grade === '3' ? '9-12' : 
-                  grade === 'all' ? 'PreK-K,K-2,3-5,6-8,9-12' : '';
-                  
-  const url = `https://www.pbslearningmedia.org/search/?rank_by=relevance&q=${encodeURIComponent(query)}&page=1` + 
-              (pbsGrade ? `&selected_facet=grades:=${encodeURIComponent(pbsGrade)}` : '');
+  const pbsGrade = grade === 'K' ? 'K-2' : grade === '1' ? '3-5' : grade === '2' ? '6-8' : grade === '3' ? '9-12' : grade === 'all' ? 'PreK-K,K-2,3-5,6-8,9-12' : '';
+
+  const url = `https://www.pbslearningmedia.org/search/?rank_by=relevance&q=${encodeURIComponent(query)}&page=1` + (pbsGrade ? `&selected_facet=grades:=${encodeURIComponent(pbsGrade)}` : '');
 
   const content = await browserScraper(url);
   const $ = cheerio.load(content);
   console.log('Content loaded, scraping results...');
 
-  const data: any = [];
+  const data: SearchResult[] = [];
+
   $('.search-item').each((index, element) => {
     const $elem = $(element);
     const title = $elem.find('.card-title').text().trim();
@@ -87,10 +95,6 @@ export async function pbslearning(query: string, grade: string) {
     // Extract media type
     const mediaTypeElem = $elem.find('.media-type .text');
     const mediaType = mediaTypeElem.length ? mediaTypeElem.text().trim() : '';
-
-    // Extract brand
-    const brandElem = $elem.find('.brand .label');
-    const brand = brandElem.length ? brandElem.text().trim() : '';
 
     // Extract grades
     const gradesElem = $elem.find('.grades');
@@ -104,15 +108,46 @@ export async function pbslearning(query: string, grade: string) {
         ?.replace(/^url\(['"](.+)['"]\)$/, '$1') || '';
 
     if (title && link) {
+      // Process grades to expand ranges (e.g., "3-5" becomes ["3","4","5"])
+      const expandedGrades: string[] = [];
+      if (grades) {
+        grades
+          .replace(/\|/g, '')
+          .split(',')
+          .forEach((gradeRange) => {
+            gradeRange = gradeRange.trim();
+            if (gradeRange.includes('-')) {
+              const [start, end] = gradeRange.split('-').map((g) => g.trim());
+              if (start === 'K' && !isNaN(parseInt(end, 10))) {
+                // Handle K-2 case: add K, 1, 2
+                expandedGrades.push('K');
+                for (let i = 1; i <= parseInt(end, 10); i++) {
+                  expandedGrades.push(i.toString());
+                }
+              } else if (!isNaN(parseInt(start, 10)) && !isNaN(parseInt(end, 10))) {
+                // Handle numeric ranges like 3-5
+                for (let i = parseInt(start, 10); i <= parseInt(end, 10); i++) {
+                  expandedGrades.push(i.toString());
+                }
+              } else {
+                expandedGrades.push(gradeRange); // Keep as is if not standard range
+              }
+            } else if (gradeRange.toLowerCase() === 'kindergarten') {
+              expandedGrades.push('K');
+            } else {
+              expandedGrades.push(gradeRange);
+            }
+          });
+      }
+
       data.push({
         title,
         link: link.startsWith('/') ? `https://www.pbslearningmedia.org${link}` : link,
         description,
-        mediaType,
-        brand,
-        grades,
+        contentType: mediaType,
+        grades: expandedGrades,
         posterUrl,
-        source: 'PBS Learning'
+        source: 'PBS Learning',
       });
     }
   });
@@ -128,7 +163,7 @@ export async function ck12(query: string, grade: string) {
 
   const $ = cheerio.load(content);
   console.log('Content loaded, scraping results...');
-  const data: any = [];
+  const data: SearchResult[] = [];
 
   $('.contentListItemStyles__Container-sc-5gkytp-0').each((index, element) => {
     const $elem = $(element);
@@ -146,13 +181,7 @@ export async function ck12(query: string, grade: string) {
     const link = $elem.find('.contentListItemStyles__TitleContainer-sc-5gkytp-3 a').attr('href');
     const description = $elem.find('.contentListItemStyles__TextContainer-sc-5gkytp-1 > div:first-child > div:nth-child(2)').text().trim();
     const posterUrl = $elem.find('.contentListItemStyles__Image-sc-5gkytp-2').attr('src') || '';
-
-    // Extract metadata
     const grades = $elem.find('.ContentListItem__ListItem-sc-8bx8mv-1:contains("Grade:")').text().replace('Grade:', '').trim();
-    const difficulty = $elem.find('.ContentListItem__ListItem-sc-8bx8mv-1:contains("Difficulty Level:")').text().replace('Difficulty Level:', '').trim();
-    const creator = $elem.find('.ContentListItem__ListItem-sc-8bx8mv-1:contains("Created by:")').text().replace('Created by:', '').trim();
-    const subject = $elem.find('.ContentListItem__ListItem-sc-8bx8mv-1:contains("Subject:")').text().replace('Subject:', '').trim();
-    const foundIn = $elem.find('.ContentListItem__ListItem-sc-8bx8mv-1:contains("Found in")').text().replace('Found in', '').trim();
 
     if (rawTitle && link) {
       data.push({
@@ -161,11 +190,8 @@ export async function ck12(query: string, grade: string) {
         link: link.startsWith('/') ? `https://www.ck12.org${link}` : link,
         description,
         posterUrl,
-        grades,
-        difficulty,
-        creator,
-        subject,
-        source: 'CK-12'
+        grades: grades.split(',').map((g) => g.trim()),
+        source: 'CK-12',
       });
     }
   });

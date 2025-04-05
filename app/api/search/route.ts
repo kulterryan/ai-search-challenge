@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   // Extract Data
   if (query && grade) {
     const [kaResults, pbsResults, ck12Results] = await Promise.all([
-      khanacademy(query),
+      khanacademy(query, grade),
       pbslearning(query, grade),
       ck12(query, grade),
     ]);
