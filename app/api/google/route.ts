@@ -1,10 +1,10 @@
+import { GOOGLE_GENERATIVE_AI_API_KEY } from '@/lib/const';
 import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY });
 
 export const runtime = 'edge';
 
 export async function GET() {
+  const ai = new GoogleGenAI({ apiKey: GOOGLE_GENERATIVE_AI_API_KEY });
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
