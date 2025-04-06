@@ -57,7 +57,7 @@ async function generateEmbeddingsForResults(data: SearchResult[], query: string)
     })
   );
 
-  const x = await insertResources(data);
+  const x = await insertResources(dataToProcess);
   console.log('Inserted resources into the database:', x);
 
   return data;
