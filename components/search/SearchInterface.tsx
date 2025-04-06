@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryState } from 'nuqs';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { SearchResults } from './SearchResults';
 import { hybridSearch } from '@/utils/search';
@@ -60,56 +60,69 @@ export const SearchInterface = () => {
   const [searchAgentActions, setSearchAgentActions] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchAttempted, setSearchAttempted] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if query is empty
+    if (!query || query.trim() === '') {
+      setSearchError("Please enter a search term");
+      setSearchResults([]);
+      setSearchAttempted(true);
+      return;
+    }
+    
     // Perform search action here
     console.log('Searching for:', query, 'in grade:', grade);
 
     setSearchProgress(true);
+    setSearchAttempted(true);
     // Clear any existing actions first
     setSearchAgentActions([]);
     setSearchResults([]);
     setSearchError(null);
-    setSearchLoading(true);
-    
+    // setSearchLoading(true);
+
+    // Fetch search results
     const data = await hybridSearch(query, grade, searchAgentActions);
 
-    
     // Add actions step by step with timeouts
     // Define all messages with their timing
     const messages = [
       { message: 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...', delay: 500 },
       { message: 'Looking through 14 results on PBSMedia...', delay: 1500 }, // 500 + 1000
       { message: 'Found 3 high quality resources on PBSMedia...', delay: 2700 }, // 500 + 1000 + 1200
-      { message: 'Finalizing content...', delay: 3500 } // 500 + 1000 + 1200 + 800
+      { message: 'Finalizing content...', delay: 3500 }, // 500 + 1000 + 1200 + 800
     ];
-    
+
     // Set up each message with its own timeout
     messages.forEach(({ message, delay }) => {
       const timer = setTimeout(() => {
-        setSearchAgentActions(prev => [...prev, message]);
+        setSearchAgentActions((prev) => [...prev, message]);
       }, delay);
-      
+
       // Clean up timers if component unmounts
       return () => clearTimeout(timer);
     });
-    
-    // Simulate search results
-    setTimeout(() => {
-      setSearchResults(data.searchResults);
-    }, 3000);
 
+    setSearchResults(data.searchResults);
+    setSearchProgress(false);
   };
 
   return (
     <div className="px-4 flex-1 w-full mb-2">
       <div className="flex items-center bg-[#f2f2f7] rounded-lg shadow-sm border border-[#e5e5ea] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#8e8e93] overflow-hidden mb-2">
         <input type="text" placeholder="Volcanoes..." defaultValue={query} onChange={(e) => setQuery(e.target.value)} onSubmit={(e) => handleSubmit(e)} onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)} className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none" />
-        <button type="submit" onClick={(e) => handleSubmit(e)} aria-label="Search" disabled={!query} className={'bg-[#1c1c1e] text-white w-12 h-12 flex items-center justify-center hover:bg-[#3a3a3c] transition duration-200' + (!query ? ' cursor-not-allowed bg-gray-700' : '')}>
-          <Search className="w-5 h-5" />
+        <button type="submit" onClick={(e) => handleSubmit(e)} aria-label="Search" className={'bg-[#1c1c1e] text-white w-12 h-12 flex items-center justify-center hover:bg-[#3a3a3c] transition duration-200' + (!query ? ' cursor-not-allowed bg-gray-700' : '')}>
+            {searchProgress ? (
+            <div className="animate-spin">
+              <Loader2 className="w-5 h-5" />
+            </div>
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
         </button>
       </div>
 
@@ -145,6 +158,16 @@ export const SearchInterface = () => {
 
       {/* Search results area */}
       {searchResults.length > 0 && <SearchResults results={searchResults} />}
+
+      {/* Welcome message when no search has been attempted */}
+      {!searchAttempted && !searchProgress && (
+        <div className="w-[600px] max-w-full mb-10">
+          <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
+            <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Ready to search</h3>
+            <p className="text-[#3a3a3c] text-sm">Enter a search term above to find educational resources.</p>
+          </div>
+        </div>
+      )}
 
       {/* Error message */}
       {searchError && (

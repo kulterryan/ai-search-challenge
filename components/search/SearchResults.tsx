@@ -20,6 +20,9 @@ const SearchResult = ({ title, description, image, type, link }: { title: string
 
 // Search results container component
 export const SearchResults = ({ results }: { results: SearchResultType[] }) => {
+  if (!results || results.length === 0) {
+    return <div className="w-[600px] max-w-full mb-10">No results found.</div>;
+  }
   return (
     <div className="w-[600px] max-w-full mb-10">
       <h2 className="text-xl font-medium mb-4">Results</h2>
