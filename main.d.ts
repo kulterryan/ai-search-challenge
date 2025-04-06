@@ -6,5 +6,6 @@ interface SearchResult {
   posterUrl?: string;
   contentType?: string;
   source: string;
+  embedding?: any;
 }
 

@@ -7,7 +7,7 @@ export const google_ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
-async function generateEmbeddings(text: string) {
+export async function generateEmbeddings(text: string) {
   const result = await google_ai.models.embedContent({
     model: 'text-embedding-004',
     contents: text,
@@ -15,7 +15,7 @@ async function generateEmbeddings(text: string) {
       outputDimensionality: 10,
     },
   });
-  console.log('Embedding result:', result);
+  // console.log('Embedding result:', result);
   return result;
 }
 
