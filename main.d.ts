@@ -3,8 +3,8 @@ interface SearchResult {
   link: string;
   description: string;
   grades?: string[];
-  posterUrl?: string;
-  contentType?: string;
+  image?: string;
+  content_type?: string;
   source: string;
   embedding?: any;
 }

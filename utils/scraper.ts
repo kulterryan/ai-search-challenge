@@ -4,6 +4,7 @@ import { BROWSERLESS_API_KEY, BROWSERLESS_ENDPOINT } from '@/lib/const';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 import { generateEmbeddings } from './llm';
+import { insertResources } from './db';
 
 async function browserScraper(url: string) {
   const browser = await puppeteer.connect({
@@ -29,7 +30,7 @@ async function browserScraper(url: string) {
   return content;
 }
 
-// Use Promise.all to wait for all embeddings to be generated
+// Use Promise.all to wait for all embeddings to be generated & Save them to the data array
 async function generateEmbeddingsForResults(data: SearchResult[]) {
   await Promise.all(
     data.map(async (item) => {
@@ -39,6 +40,8 @@ async function generateEmbeddingsForResults(data: SearchResult[]) {
       return item;
     })
   );
+
+  await insertResources(data);
 
   return data;
 }
@@ -68,9 +71,9 @@ export async function khanacademy(query: string, grade: string) {
       data.push({
         title,
         link: `https://www.khanacademy.org${link}`,
-        contentType: type,
+        content_type: type,
         grades: grade === 'all' ? [] : [grade],
-        posterUrl: $elem.find('img').attr('src') || '',
+        image: $elem.find('img').attr('src') || '',
         description,
         source: 'Khan Academy',
       });
@@ -155,9 +158,9 @@ export async function pbslearning(query: string, grade: string) {
         title,
         link: link.startsWith('/') ? `https://www.pbslearningmedia.org${link}` : link,
         description,
-        contentType: mediaType,
+        content_type: mediaType,
         grades: expandedGrades,
-        posterUrl,
+        image: posterUrl,
         source: 'PBS Learning',
       });
     }
@@ -203,10 +206,10 @@ export async function ck12(query: string, grade: string) {
     if (rawTitle && link) {
       data.push({
         title: rawTitle,
-        contentType,
+        content_type: contentType,
         link: link.startsWith('/') ? `https://www.ck12.org${link}` : link,
         description,
-        posterUrl,
+        image: posterUrl,
         grades: grades.split(',').map((g) => g.trim()),
         source: 'CK-12',
       });
