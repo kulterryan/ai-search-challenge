@@ -18,7 +18,7 @@ export async function hybridSearch(query: string, grade: string) {
   const { data, error } = await supabase.rpc('match_content', {
     query_embedding: embedding,
     match_threshold: 0.7, // Adjust threshold as needed
-    match_count: 3, // Limit results
+    match_count: 10, // Limit results
     filter_grade: grade === 'all' ? 'all' : grade, // Filter by grade if specified
     query_text: query,
   });

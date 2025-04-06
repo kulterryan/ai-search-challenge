@@ -5,6 +5,7 @@ import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { SearchResults } from './SearchResults';
 import { hybridSearch } from '@/utils/search';
+import { mainScraper } from '@/utils/scraper';
 
 // Define type for grade options
 type GradeOptionType = {
@@ -42,14 +43,16 @@ export const SearchInterface = () => {
   const [searchAgentActions, setSearchAgentActions] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setHasSearched(true);
+
     // Check if query is empty
     if (!query || query.trim() === '') {
-      setSearchError("Please enter a search term");
+      setSearchError('Please enter a search term');
       setSearchResults([]);
       return;
     }
@@ -73,31 +76,42 @@ export const SearchInterface = () => {
       return;
     }
 
-    // If the search is successful, set the search results
-    setSearchResults(data.searchResults);
-    setSearchProgress(false);
+    if (data.searchResults.length === 3) {
+      // If the search is successful, set the search results
+      setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources in our database']);
+      setSearchResults(data.searchResults);
+      setSearchProgress(false);
+      // We already have enough results, no need to scrape more
+    } else if (data.searchResults.length === 0) {
+      setSearchProgress(true);
+      setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
+      
+      // Starting the scraping process
+      await mainScraper(query, grade);
+      
+      setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources on the web...']);
+      
+      const results = await hybridSearch(query, grade);
+      setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
+      
+      setSearchResults(results.searchResults);
+      setSearchProgress(false);
+    } else {
+      setSearchProgress(true);
+      setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
+      // We have some results but not exactly 3
+      
+      // Starting the scraping process to get more results
+      await mainScraper(query, grade);
 
-    if (data.searchResults.length === 0) {
-      setSearchError('No results found');
-      return;
+      setSearchAgentActions((prev) => [...prev, `Found 3 high quality resources on the web...`]);
+      
+      const results = await hybridSearch(query, grade);
+      setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
+
+      setSearchResults(results.searchResults);
+      setSearchProgress(false);
     }
-    const messages = [
-      { message: 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...', delay: 500 },
-      { message: 'Looking through 14 results on PBSMedia...', delay: 1500 }, // 500 + 1000
-      { message: 'Found 3 high quality resources on PBSMedia...', delay: 2700 }, // 500 + 1000 + 1200
-      { message: 'Finalizing content...', delay: 3500 }, // 500 + 1000 + 1200 + 800
-    ];
-
-    // Set up each message with its own timeout
-    messages.forEach(({ message, delay }) => {
-      const timer = setTimeout(() => {
-        setSearchAgentActions((prev) => [...prev, message]);
-      }, delay);
-
-      // Clean up timers if component unmounts
-      return () => clearTimeout(timer);
-    });
-
   };
 
   return (
@@ -105,19 +119,19 @@ export const SearchInterface = () => {
       <div className="flex items-center bg-[#f2f2f7] rounded-lg shadow-sm border border-[#e5e5ea] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#8e8e93] overflow-hidden mb-2">
         <input type="text" placeholder="Volcanoes..." defaultValue={query} onChange={(e) => setQuery(e.target.value)} onSubmit={(e) => handleSubmit(e)} onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)} className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none" />
         <button type="submit" onClick={(e) => handleSubmit(e)} aria-label="Search" className={'bg-[#1c1c1e] text-white w-12 h-12 flex items-center justify-center hover:bg-[#3a3a3c] transition duration-200' + (!query ? ' cursor-not-allowed bg-gray-700' : '')}>
-            {searchProgress ? (
+          {searchProgress ? (
             <div className="animate-spin">
               <Loader2 className="w-5 h-5" />
             </div>
-            ) : (
-              <Search className="w-5 h-5" />
-            )}
+          ) : (
+            <Search className="w-5 h-5" />
+          )}
         </button>
       </div>
 
       <div className="flex justify-start mb-6">
         <div className="relative">
-          <select defaultValue={grade} onChange={(e) => setGrade(e.target.value)} className="appearance-none h-8 pl-3 pr-8 bg-[#f2f2f7] rounded-md text-sm text-[#1c1c1e] border border-[#e5e5ea] focus:outline-none focus:ring-1 focus:ring-[#8e8e93]">
+          <select defaultValue={grade} onChange={(e) => setGrade(e.target.value)} disabled={searchProgress} className="appearance-none h-8 pl-3 pr-8 bg-[#f2f2f7] rounded-md text-sm text-[#1c1c1e] border border-[#e5e5ea] focus:outline-none focus:ring-1 focus:ring-[#8e8e93]">
             {gradeOptions.map((grade) => (
               <option key={grade.id} value={grade.value}>
                 {grade.label}
@@ -130,7 +144,7 @@ export const SearchInterface = () => {
         </div>
       </div>
       {/* Search agent actions area */}
-      
+      {searchAgentActions.length > 0 && (
         <div className="w-[600px] max-w-full mb-10">
           <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
             <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Astral is looking for resources...</h3>
@@ -143,13 +157,13 @@ export const SearchInterface = () => {
             </div>
           </div>
         </div>
-      
+      )}  
 
       {/* Search results area */}
       {searchResults.length > 0 && <SearchResults results={searchResults} />}
 
       {/* Welcome message when no search has been attempted */}
-      {!searchProgress && searchResults.length === 0 && !searchError && (
+      {!searchProgress && searchResults.length === 0 && !searchError && !hasSearched && (
         <div className="w-[600px] max-w-full mb-10">
           <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
             <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Ready to search</h3>

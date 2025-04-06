@@ -35,7 +35,10 @@ async function generateEmbeddingsForResults(data: SearchResult[]) {
   await Promise.all(
     data.map(async (item) => {
       // Generate embeddings for each result
-      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
+      const { embeddings } = await generateEmbeddings(`
+        Title: ${item.title},
+        Description:  ${item.description}
+         `);
       item.embedding = embeddings?.[0]?.values || [];
       return item;
     })
@@ -223,4 +226,17 @@ export async function ck12(query: string, grade: string) {
 
   console.log('Generated embeddings for CK12 results:', data.length);
   return data;
+}
+
+export async function mainScraper(query: string, grade: string) {
+  // console.log('Main scraper query:', query);
+  // console.log('Grade:', grade);
+
+  const [khanAcademyResults, pbsLearningResults, ck12Results] = await Promise.all([khanacademy(query, grade), pbslearning(query, grade), ck12(query, grade)]);
+
+  const allResults = [...khanAcademyResults, ...pbsLearningResults, ...ck12Results];
+
+  console.log('Total results from all sources:', allResults.length);
+
+  return allResults;
 }

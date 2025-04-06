@@ -19,6 +19,7 @@ export async function generateEmbeddings(text: string) {
   return result;
 }
 
+// Deprecated function
 export async function scoreRelevance(query: string, content: SearchResult) {
   const prompt = `
   You are a relevance scoring assistant. Score the relevance of the document to the query on a scale of 0-100, where 100 is perfectly relevant.
@@ -44,6 +45,8 @@ export async function scoreRelevance(query: string, content: SearchResult) {
   return 0;
 }
 
+
+// Deprecated function
 export async function searchContent(query: string) {
   const supabase = await createClient();
 
