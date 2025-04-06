@@ -6,6 +6,13 @@ import { type NextRequest } from 'next/server';
 export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
+  // Check if the request has the required headers
+  return Response.json(
+    { error: 'Invalid request' },
+    {
+      status: 400
+    }
+  );
   // Get the query parameters from the request
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get('query');

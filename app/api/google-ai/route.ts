@@ -8,6 +8,12 @@ const model = google('gemini-2.0-flash', {
 });
 
 export async function GET() {
+  return Response.json(
+    { error: 'Invalid request' },
+    {
+      status: 400
+    }
+  );
   const result = await generateText({
     model: model,
     prompt: `

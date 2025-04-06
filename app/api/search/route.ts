@@ -3,6 +3,12 @@ import { ck12, khanacademy, pbslearning } from '@/utils/scraper';
 
 // Scrape Khan Academy Search Engine
 export async function GET(req: NextRequest) {
+  return Response.json(
+    { error: 'Invalid request' },
+    {
+      status: 400
+    }
+  );
   // Get the query parameters from the request
   const searchParams = req.nextUrl.searchParams;
   const query = searchParams.get('query');
