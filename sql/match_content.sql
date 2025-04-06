@@ -28,20 +28,35 @@ BEGIN
     c.content_type,
     c.image,
     c.source,
+    -- Convert grades JSON array into a text array
     (SELECT ARRAY(SELECT jsonb_array_elements_text(c.grades::jsonb))) AS grades,
-    1 - (CAST(c.embedding AS vector) <#> query_embedding) AS similarity
+    -- Use CASE to apply combined scoring when query_text is provided,
+    -- otherwise fall back to pure vector similarity.
+    CASE 
+      WHEN query_text = '' THEN 1 - (CAST(c.embedding AS vector) <#> query_embedding)
+      ELSE (
+        (1 - (CAST(c.embedding AS vector) <#> query_embedding)) * 0.7 +
+        ts_rank(
+          to_tsvector('english', c.title || ' ' || COALESCE(c.description, '')),
+          plainto_tsquery('english', query_text)
+        ) * 0.3
+      )
+    END AS similarity
   FROM content c
-  WHERE 1 - (CAST(c.embedding AS vector) <#> query_embedding) > match_threshold
+  WHERE 
+    -- Filter based on vector similarity threshold
+    1 - (CAST(c.embedding AS vector) <#> query_embedding) > match_threshold
     AND (
       filter_grade = 'all'
       OR filter_grade IN (SELECT jsonb_array_elements_text(c.grades::jsonb))
     )
-    -- Text search component for better relevance filtering; if query_text is empty, bypass the filter.
+    -- Apply text search filtering if query_text is provided
     AND (
       query_text = '' OR
-      to_tsvector('english', c.title || ' ' || COALESCE(c.description, '')) @@ plainto_tsquery('english', query_text)
+      to_tsvector('english', c.title || ' ' || COALESCE(c.description, '')) @@ 
+      plainto_tsquery('english', query_text)
     )
-    -- Exclude rows if either description or image is blank or null
+    -- Exclude rows with empty description or image
     AND COALESCE(c.description, '') <> ''
     AND COALESCE(c.image, '') <> ''
   ORDER BY similarity DESC
