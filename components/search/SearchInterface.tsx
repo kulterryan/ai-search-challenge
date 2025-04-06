@@ -2,7 +2,7 @@
 
 import { useQueryState } from 'nuqs';
 import { Search, ChevronDown, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SearchResults } from './SearchResults';
 import { hybridSearch } from '@/utils/search';
 
@@ -12,24 +12,6 @@ type GradeOptionType = {
   label: string;
   value: string;
 };
-
-// Fixture data for search results
-const searchResultsSample: SearchResultType[] = [
-  {
-    id: 1,
-    title: 'Volcanic Eruptions and Their Impact on Climate',
-    description: 'Learn about how volcanic eruptions affect global climate patterns through the release of ash, gases, and aerosols into the atmosphere.',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0tiyaniMsAvPtpe3YLePWvpddUHDv6Qz8A&s',
-    content_type: 'Video',
-  },
-  {
-    id: 2,
-    title: 'The Formation and Structure of Volcanoes',
-    description: 'Discover how volcanoes form and the different types of volcanic structures found around the world, from shield volcanoes to stratovolcanoes.',
-    image: 'https://www.thoughtco.com/thmb/RVHYNhzVuhQIGPETDM42VukXVsg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/an-active-volcano-spews-out-hot-red-lava-and-smoke--140189201-5b8e85b046e0fb00500d0e23.jpg',
-    content_type: 'Interactive Lesson',
-  },
-];
 
 // Fixture data for grade options
 const gradeOptions: GradeOptionType[] = [
