@@ -9,3 +9,10 @@ interface SearchResult {
   embedding?: any;
 }
 
+type SearchResultType = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  type: string;
+};

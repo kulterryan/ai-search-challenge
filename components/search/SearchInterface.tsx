@@ -2,7 +2,8 @@
 
 import { useQueryState } from 'nuqs';
 import { Search, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { SearchResults } from './SearchResults';
 
 // Define type for grade options
 type GradeOptionType = {
@@ -10,6 +11,24 @@ type GradeOptionType = {
   label: string;
   value: string;
 };
+
+// Fixture data for search results
+const searchResultsSample: SearchResultType[] = [
+  {
+    id: 1,
+    title: 'Volcanic Eruptions and Their Impact on Climate',
+    description: 'Learn about how volcanic eruptions affect global climate patterns through the release of ash, gases, and aerosols into the atmosphere.',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0tiyaniMsAvPtpe3YLePWvpddUHDv6Qz8A&s',
+    type: 'Video',
+  },
+  {
+    id: 2,
+    title: 'The Formation and Structure of Volcanoes',
+    description: 'Discover how volcanoes form and the different types of volcanic structures found around the world, from shield volcanoes to stratovolcanoes.',
+    image: 'https://www.thoughtco.com/thmb/RVHYNhzVuhQIGPETDM42VukXVsg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/an-active-volcano-spews-out-hot-red-lava-and-smoke--140189201-5b8e85b046e0fb00500d0e23.jpg',
+    type: 'Interactive Lesson',
+  },
+];
 
 // Fixture data for grade options
 const gradeOptions: GradeOptionType[] = [
@@ -38,9 +57,12 @@ export const SearchInterface = () => {
   const [grade, setGrade] = useQueryState('grade', { defaultValue: 'all' });
   const [searchProgress, setSearchProgress] = useState(false);
   const [searchAgentActions, setSearchAgentActions] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Perform search action here
     console.log('Searching for:', query, 'in grade:', grade);
@@ -48,44 +70,39 @@ export const SearchInterface = () => {
     setSearchProgress(true);
     // Clear any existing actions first
     setSearchAgentActions([]);
-    
+    setSearchResults([]);
+    setSearchError(null);
+    setSearchLoading(true);
+
     // Add actions step by step with timeouts
     setTimeout(() => {
-      setSearchAgentActions(prev => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
-      
+      setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
+
       setTimeout(() => {
-      setSearchAgentActions(prev => [...prev, 'Looking through 14 results on PBSMedia...']);
-      
-      setTimeout(() => {
-        setSearchAgentActions(prev => [...prev, 'Found 3 high quality resources on PBSMedia...']);
-        
+        setSearchAgentActions((prev) => [...prev, 'Looking through 14 results on PBSMedia...']);
+
         setTimeout(() => {
-        setSearchAgentActions(prev => [...prev, 'Looking...']);
-        }, 800);
-      }, 1200);
+          setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources on PBSMedia...']);
+
+          setTimeout(() => {
+            setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
+          }, 800);
+        }, 1200);
       }, 1000);
     }, 500);
+
+    // Simulate search results
+    setTimeout(() => {
+      setSearchResults(searchResultsSample);
+    }, 3000);
 
   };
 
   return (
     <div className="px-4 flex-1 w-full mb-2">
       <div className="flex items-center bg-[#f2f2f7] rounded-lg shadow-sm border border-[#e5e5ea] transition-all duration-200 focus-within:ring-1 focus-within:ring-[#8e8e93] overflow-hidden mb-2">
-        <input type="text" 
-          placeholder="Volcanoes..." 
-          defaultValue={query} 
-          onChange={(e) => setQuery(e.target.value)} 
-          onSubmit={(e) => handleSubmit(e)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)}
-          className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none"
-        />
-        <button type="submit" 
-
-        onClick={(e) => handleSubmit(e)}
-          aria-label="Search"
-          disabled={!query}
-        
-        className={"bg-[#1c1c1e] text-white w-12 h-12 flex items-center justify-center hover:bg-[#3a3a3c] transition duration-200" + (!query ? " cursor-not-allowed bg-gray-700" : "")}>
+        <input type="text" placeholder="Volcanoes..." defaultValue={query} onChange={(e) => setQuery(e.target.value)} onSubmit={(e) => handleSubmit(e)} onKeyDown={(e) => e.key === 'Enter' && handleSubmit(e)} className="flex-grow h-12 pl-4 bg-transparent text-base text-[#1c1c1e] placeholder:text-[#8e8e93] focus:outline-none" />
+        <button type="submit" onClick={(e) => handleSubmit(e)} aria-label="Search" disabled={!query} className={'bg-[#1c1c1e] text-white w-12 h-12 flex items-center justify-center hover:bg-[#3a3a3c] transition duration-200' + (!query ? ' cursor-not-allowed bg-gray-700' : '')}>
           <Search className="w-5 h-5" />
         </button>
       </div>
@@ -105,20 +122,33 @@ export const SearchInterface = () => {
         </div>
       </div>
       {/* Search agent actions area */}
-      {(searchProgress)  && (
+      {searchProgress && (
         <div className="w-[600px] max-w-full mb-10">
-        <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
-          <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Astral is looking for resources...</h3>
-          <div className="space-y-2.5">
-            {searchAgentActions.map((action, index) => (
-              <div key={index} className="text-[#3a3a3c] text-sm border-l-2 border-gray-200 pl-3 py-0.5">
-                {action}
-              </div>
-            ))}
+          <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
+            <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Astral is looking for resources...</h3>
+            <div className="space-y-2.5">
+              {searchAgentActions.map((action, index) => (
+                <div key={index} className="text-[#3a3a3c] text-sm border-l-2 border-gray-200 pl-3 py-0.5">
+                  {action}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-          )}
+      )}
+
+      {/* Search results area */}
+      {searchResults.length > 0 && <SearchResults results={searchResults} />}
+
+      {/* Error message */}
+      {searchError && (
+        <div className="w-[600px] max-w-full mb-10">
+          <div className="rounded-lg border border-red-500 bg-red-50 p-4">
+            <h3 className="text-lg font-medium mb-3 text-red-700">Error</h3>
+            <p className="text-red-600">{searchError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
