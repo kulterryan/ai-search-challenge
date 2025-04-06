@@ -64,7 +64,6 @@ export const SearchInterface = () => {
     setSearchError(null);
 
     // Fetch search results
-    searchAgentActions.push('Searching for resources...');
     setSearchAgentActions((prev) => [...prev, 'Searching for resources...']);
     const data = await hybridSearch(query, grade);
 
