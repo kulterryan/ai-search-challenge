@@ -10,7 +10,7 @@ async function browserScraper(url: string) {
     browserWSEndpoint: `wss://${BROWSERLESS_ENDPOINT}?token=${BROWSERLESS_API_KEY}`,
   });
 
-  console.log('Navigating to:', url);
+  // console.log('Navigating to:', url);
 
   // Create a new page
   const page = await browser.newPage();
@@ -20,7 +20,7 @@ async function browserScraper(url: string) {
     timeout: 0,
   });
 
-  console.log('Page loaded, scraping content...');
+  // console.log('Page loaded, scraping content...');
 
   // Wait for the content to load
   const content = await page.content();
