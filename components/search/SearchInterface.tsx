@@ -42,7 +42,6 @@ export const SearchInterface = () => {
   const [searchAgentActions, setSearchAgentActions] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [searchAttempted, setSearchAttempted] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,20 +51,14 @@ export const SearchInterface = () => {
     if (!query || query.trim() === '') {
       setSearchError("Please enter a search term");
       setSearchResults([]);
-      setSearchAttempted(true);
       return;
     }
-    
-    // Perform search action here
-    console.log('Searching for:', query, 'in grade:', grade);
 
-    setSearchProgress(true);
-    setSearchAttempted(true);
     // Clear any existing actions first
+    setSearchProgress(true);
     setSearchAgentActions([]);
     setSearchResults([]);
     setSearchError(null);
-    // setSearchLoading(true);
 
     // Fetch search results
     const data = await searchHandler(query, grade, searchAgentActions);
@@ -142,7 +135,7 @@ export const SearchInterface = () => {
       {searchResults.length > 0 && <SearchResults results={searchResults} />}
 
       {/* Welcome message when no search has been attempted */}
-      {!searchAttempted && !searchProgress && (
+      {!searchProgress && searchResults.length === 0 && !searchError && (
         <div className="w-[600px] max-w-full mb-10">
           <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
             <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Ready to search</h3>
