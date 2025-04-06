@@ -11,7 +11,7 @@ const SearchResult = ({ title, description, image, type, link }: { title: string
         <div className="p-4 flex-1">
           <div className="text-xs text-blue-600 font-medium mb-1">{type}</div>
           <h3 className="font-medium text-base mb-2">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
+          <p className="text-sm text-gray-600 line-clamp-4">{description}</p>
         </div>
       </div>
     </Link>

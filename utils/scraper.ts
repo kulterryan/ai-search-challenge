@@ -31,13 +31,14 @@ async function browserScraper(url: string) {
 }
 
 // Use Promise.all to wait for all embeddings to be generated & Save them to the data array
-async function generateEmbeddingsForResults(data: SearchResult[]) {
+async function generateEmbeddingsForResults(data: SearchResult[], query: string) {
   await Promise.all(
     data.map(async (item) => {
       // Generate embeddings for each result
       const { embeddings } = await generateEmbeddings(`
         Title: ${item.title},
         Description:  ${item.description}
+        Query: ${query}
          `);
       item.embedding = embeddings?.[0]?.values || [];
       return item;
@@ -86,7 +87,7 @@ export async function khanacademy(query: string, grade: string) {
   console.log('Extracted Khan Academy results:', data.length);
 
   // Use Promise.all to wait for all embeddings to be generated
-  await generateEmbeddingsForResults(data);
+  await generateEmbeddingsForResults(data, query);
 
   console.log('Generated embeddings for Khan Academy results:', data.length);
   return data;
@@ -172,7 +173,7 @@ export async function pbslearning(query: string, grade: string) {
   console.log('Extracted PBS Learning Media results:', data.length);
 
   // Use Promise.all to wait for all embeddings to be generated
-  await generateEmbeddingsForResults(data);
+  await generateEmbeddingsForResults(data, query);
 
   console.log('Generated embeddings for PBS Learning Media results:', data.length);
   return data;
@@ -222,7 +223,7 @@ export async function ck12(query: string, grade: string) {
   console.log('Extracted CK12 results:', data.length);
 
   // Use it in the ck12 function
-  await generateEmbeddingsForResults(data);
+  await generateEmbeddingsForResults(data, query);
 
   console.log('Generated embeddings for CK12 results:', data.length);
   return data;

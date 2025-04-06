@@ -76,9 +76,9 @@ export const SearchInterface = () => {
       return;
     }
 
-    if (data.searchResults.length === 3) {
+    if (data.searchResults.length >= 3) {
       // If the search is successful, set the search results
-      setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources in our database']);
+      setSearchAgentActions((prev) => [...prev, 'Found high quality resources in our database']);
       setSearchResults(data.searchResults);
       setSearchProgress(false);
       // We already have enough results, no need to scrape more
@@ -89,7 +89,7 @@ export const SearchInterface = () => {
       // Starting the scraping process
       await mainScraper(query, grade);
       
-      setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources on the web...']);
+      setSearchAgentActions((prev) => [...prev, 'Found high quality resources on the web...']);
       
       const results = await hybridSearch(query, grade);
       setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
@@ -104,7 +104,7 @@ export const SearchInterface = () => {
       // Starting the scraping process to get more results
       await mainScraper(query, grade);
 
-      setSearchAgentActions((prev) => [...prev, `Found 3 high quality resources on the web...`]);
+      setSearchAgentActions((prev) => [...prev, `Found high quality resources on the web...`]);
       
       const results = await hybridSearch(query, grade);
       setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
