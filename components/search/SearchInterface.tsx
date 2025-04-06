@@ -4,7 +4,7 @@ import { useQueryState } from 'nuqs';
 import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { SearchResults } from './SearchResults';
-import { hybridSearch } from '@/utils/search';
+import { searchHandler } from '@/utils/search';
 
 // Define type for grade options
 type GradeOptionType = {
@@ -68,7 +68,7 @@ export const SearchInterface = () => {
     // setSearchLoading(true);
 
     // Fetch search results
-    const data = await hybridSearch(query, grade, searchAgentActions);
+    const data = await searchHandler(query, grade, searchAgentActions);
 
     // Add actions step by step with timeouts
     // Define all messages with their timing

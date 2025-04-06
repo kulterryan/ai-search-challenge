@@ -31,3 +31,28 @@ export async function hybridSearch(query: string, grade: string, searchProgress:
 
   return { searchResults: data, searchProgress, searchError: null };
 }
+
+export async function searchHandler(query: string, grade: string, searchActionAgent: string[]) {
+  // Perform the search action here
+  console.log('Searching for:', query, 'in grade:', grade);
+
+  // Perform search action here
+  const { searchResults, searchError } = await hybridSearch(query, grade, []);
+
+  // Update search progress
+  searchActionAgent.push('Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...');
+
+  // Check if the search result is empty
+  if (!searchResults || searchResults.length === 0) {
+    console.error('No search results found');
+  }
+
+  // Check if there was an error
+  if (searchError) {
+    console.error('Search error:', searchError);
+    return { searchResults: [], searchProgress: searchActionAgent, searchError };
+  }
+
+  // Return the results
+  return { searchResults, searchProgress: searchActionAgent, searchError: null };
+}
