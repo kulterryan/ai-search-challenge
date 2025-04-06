@@ -101,7 +101,7 @@ export const SearchInterface = () => {
     
     // Simulate search results
     setTimeout(() => {
-      setSearchResults(searchResultsSample);
+      setSearchResults(searchResults);
     }, 3700);
 
   };

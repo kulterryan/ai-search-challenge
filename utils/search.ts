@@ -29,15 +29,5 @@ export async function hybridSearch(query: string, grade: string, searchProgress:
     return { searchResults: [], searchProgress, searchError: error.message };
   }
 
-  // // Filter by grade if specified
-  // const filteredResults = grade 
-  //   ? data.filter(item => item.grade === grade) 
-  //   : data;
-
-  // if (error) {
-  //   console.error('Error fetching hybrid search results:', error);
-  //   return [];
-  // }
-
-  return { searchResults: [], searchProgress, searchError: null };
+  return { searchResults: data, searchProgress, searchError: null };
 }
