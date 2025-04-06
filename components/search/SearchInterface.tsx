@@ -76,26 +76,12 @@ export const SearchInterface = () => {
       return;
     }
 
-    if (data.searchResults.length >= 3) {
+    if (data.searchResults.length > 0) {
       // If the search is successful, set the search results
       setSearchAgentActions((prev) => [...prev, 'Found high quality resources in our database']);
       setSearchResults(data.searchResults);
       setSearchProgress(false);
       // We already have enough results, no need to scrape more
-    } else if (data.searchResults.length === 0) {
-      setSearchProgress(true);
-      setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
-      
-      // Starting the scraping process
-      await mainScraper(query, grade);
-      
-      setSearchAgentActions((prev) => [...prev, 'Found high quality resources on the web...']);
-      
-      const results = await hybridSearch(query, grade);
-      setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
-      
-      setSearchResults(results.searchResults);
-      setSearchProgress(false);
     } else {
       setSearchProgress(true);
       setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
