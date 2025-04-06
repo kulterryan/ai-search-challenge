@@ -15,4 +15,5 @@ type SearchResultType = {
   description: string;
   image: string;
   content_type: string;
+  link?: string;
 };
