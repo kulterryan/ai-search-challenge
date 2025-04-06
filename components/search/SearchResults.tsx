@@ -31,7 +31,7 @@ export const SearchResults = ({ results }: { results: SearchResultType[] }) => {
             title={result.title}
             description={result.description}
             image={result.image}
-            type={result.type}
+            type={result.content_type}
           />
         ))}
       </div>

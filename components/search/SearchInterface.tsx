@@ -20,14 +20,14 @@ const searchResultsSample: SearchResultType[] = [
     title: 'Volcanic Eruptions and Their Impact on Climate',
     description: 'Learn about how volcanic eruptions affect global climate patterns through the release of ash, gases, and aerosols into the atmosphere.',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRa0tiyaniMsAvPtpe3YLePWvpddUHDv6Qz8A&s',
-    type: 'Video',
+    content_type: 'Video',
   },
   {
     id: 2,
     title: 'The Formation and Structure of Volcanoes',
     description: 'Discover how volcanoes form and the different types of volcanic structures found around the world, from shield volcanoes to stratovolcanoes.',
     image: 'https://www.thoughtco.com/thmb/RVHYNhzVuhQIGPETDM42VukXVsg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/an-active-volcano-spews-out-hot-red-lava-and-smoke--140189201-5b8e85b046e0fb00500d0e23.jpg',
-    type: 'Interactive Lesson',
+    content_type: 'Interactive Lesson',
   },
 ];
 
@@ -75,10 +75,8 @@ export const SearchInterface = () => {
     setSearchError(null);
     setSearchLoading(true);
     
-    const { searchResults, searchProgress, searchError} = await hybridSearch(query, grade, searchAgentActions);
-    console.log('Search results:', searchResults);
-    console.log('Search progress:', searchProgress);
-    console.log('Search error:', searchError);
+    const data = await hybridSearch(query, grade, searchAgentActions);
+
     
     // Add actions step by step with timeouts
     // Define all messages with their timing
@@ -101,8 +99,8 @@ export const SearchInterface = () => {
     
     // Simulate search results
     setTimeout(() => {
-      setSearchResults(searchResults);
-    }, 3700);
+      setSearchResults(data.searchResults);
+    }, 3000);
 
   };
 

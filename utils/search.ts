@@ -4,13 +4,13 @@ import { generateEmbeddings } from "./llm";
 import { createClient } from "./supabase/server";
 
 export async function hybridSearch(query: string, grade: string, searchProgress: string[]) {
-  console.log('Hybrid search query:', query);
-  console.log('Grade:', grade);
+  // console.log('Hybrid search query:', query);
+  // console.log('Grade:', grade);
 
   // Generate embeddings for the query
   const { embeddings } = await generateEmbeddings(query);
   const embedding = embeddings?.[0]?.values || [];
-  console.log('Generated query embedding:', embedding);
+  // console.log('Generated query embedding:', embedding);
   
   // Perform the search in the database
   const supabase = await createClient();

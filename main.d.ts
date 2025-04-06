@@ -14,5 +14,5 @@ type SearchResultType = {
   title: string;
   description: string;
   image: string;
-  type: string;
+  content_type: string;
 };
