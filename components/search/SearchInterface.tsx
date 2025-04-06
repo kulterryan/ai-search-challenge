@@ -4,6 +4,7 @@ import { useQueryState } from 'nuqs';
 import { Search, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { SearchResults } from './SearchResults';
+import { hybridSearch } from '@/utils/search';
 
 // Define type for grade options
 type GradeOptionType = {
@@ -73,7 +74,12 @@ export const SearchInterface = () => {
     setSearchResults([]);
     setSearchError(null);
     setSearchLoading(true);
-
+    
+    const { searchResults, searchProgress, searchError} = await hybridSearch(query, grade, searchAgentActions);
+    console.log('Search results:', searchResults);
+    console.log('Search progress:', searchProgress);
+    console.log('Search error:', searchError);
+    
     // Add actions step by step with timeouts
     // Define all messages with their timing
     const messages = [
@@ -86,13 +92,13 @@ export const SearchInterface = () => {
     // Set up each message with its own timeout
     messages.forEach(({ message, delay }) => {
       const timer = setTimeout(() => {
-      setSearchAgentActions(prev => [...prev, message]);
+        setSearchAgentActions(prev => [...prev, message]);
       }, delay);
       
       // Clean up timers if component unmounts
       return () => clearTimeout(timer);
     });
-
+    
     // Simulate search results
     setTimeout(() => {
       setSearchResults(searchResultsSample);
