@@ -47,9 +47,9 @@ async function generateEmbeddingsForResults(data: SearchResult[]) {
 }
 
 export async function khanacademy(query: string, grade: string) {
-  const updatedQuery = query + ` for Grade ` + (grade === 'all' ? '' : grade);
+  // const updatedQuery = query + ` for Grade ` + (grade === 'all' ? '' : grade);
   // console.log('Updated query:', updatedQuery);
-  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${encodeURIComponent(updatedQuery)}&content_kinds=Exercise%2CVideo%2CTopic`;
+  const url = `https://www.khanacademy.org/search?search_again=1&page_search_query=${encodeURIComponent(query)}&content_kinds=Exercise%2CVideo%2CTopic`;
 
   const content = await browserScraper(url);
 
@@ -176,7 +176,7 @@ export async function pbslearning(query: string, grade: string) {
 }
 
 export async function ck12(query: string, grade: string) {
-  const url = `https://www.ck12.org/search/?referrer=search&pageNum=1&tabId=communityContributedContentTab&gradeFilters=${encodeURIComponent(grade)}&q=${encodeURIComponent(query)}`;
+  const url = `https://www.ck12.org/search/?referrer=search&typeFilters=read%2Cvideo&pageNum=1&tabId=communityContributedContentTab&gradeFilters=${encodeURIComponent(grade)}&q=${encodeURIComponent(query)}`;
 
   const content = await browserScraper(url);
 

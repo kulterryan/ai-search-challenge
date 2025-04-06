@@ -18,16 +18,6 @@ type SearchResultType = {
   type: string;
 };
 
-// Placeholder search agent actions
-const searchAgentActions = [
-  "Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...",
-  "Looking through 14 results on PBSMedia...",
-  "Found 3 high quality resources on PBSMedia...",
-  "Looking..."
-];
-
-
-
 // Fixture data for search results
 const searchResults: SearchResultType[] = [
   {
@@ -105,19 +95,6 @@ export default async function Home() {
         <SearchInterface />
       </Suspense>
       
-      {/* Search agent actions area */}
-      <div className="w-[600px] max-w-full px-4 mb-10">
-        <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
-          <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Astral is looking for resources...</h3>
-          <div className="space-y-2.5">
-            {searchAgentActions.map((action, index) => (
-              <div key={index} className="text-[#3a3a3c] text-sm border-l-2 border-gray-200 pl-3 py-0.5">
-                {action}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
       
       {/* Search results section */}
       <SearchResults results={searchResults} />
