@@ -1,3 +1,4 @@
+
 // Individual search result component
 const SearchResult = ({ title, description, image, type }: { title: string; description: string; image: string; type: string }) => {
   return (
@@ -21,7 +22,7 @@ const SearchResult = ({ title, description, image, type }: { title: string; desc
 // Search results container component
 export const SearchResults = ({ results }: { results: SearchResultType[] }) => {
   return (
-    <div className="w-[600px] max-w-full px-4 mb-10">
+    <div className="w-[600px] max-w-full mb-10">
       <h2 className="text-xl font-medium mb-4">Results</h2>
       <div>
         {results.map((result) => (

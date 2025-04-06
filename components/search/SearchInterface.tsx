@@ -75,26 +75,28 @@ export const SearchInterface = () => {
     setSearchLoading(true);
 
     // Add actions step by step with timeouts
-    setTimeout(() => {
-      setSearchAgentActions((prev) => [...prev, 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...']);
-
-      setTimeout(() => {
-        setSearchAgentActions((prev) => [...prev, 'Looking through 14 results on PBSMedia...']);
-
-        setTimeout(() => {
-          setSearchAgentActions((prev) => [...prev, 'Found 3 high quality resources on PBSMedia...']);
-
-          setTimeout(() => {
-            setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
-          }, 800);
-        }, 1200);
-      }, 1000);
-    }, 500);
+    // Define all messages with their timing
+    const messages = [
+      { message: 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...', delay: 500 },
+      { message: 'Looking through 14 results on PBSMedia...', delay: 1500 }, // 500 + 1000
+      { message: 'Found 3 high quality resources on PBSMedia...', delay: 2700 }, // 500 + 1000 + 1200
+      { message: 'Finalizing content...', delay: 3500 } // 500 + 1000 + 1200 + 800
+    ];
+    
+    // Set up each message with its own timeout
+    messages.forEach(({ message, delay }) => {
+      const timer = setTimeout(() => {
+      setSearchAgentActions(prev => [...prev, message]);
+      }, delay);
+      
+      // Clean up timers if component unmounts
+      return () => clearTimeout(timer);
+    });
 
     // Simulate search results
     setTimeout(() => {
       setSearchResults(searchResultsSample);
-    }, 3000);
+    }, 3700);
 
   };
 
