@@ -4,7 +4,6 @@ import { BROWSERLESS_API_KEY, BROWSERLESS_ENDPOINT } from '@/lib/const';
 import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 import { generateEmbeddings } from './llm';
-import { title } from 'process';
 
 async function browserScraper(url: string) {
   const browser = await puppeteer.connect({
@@ -67,13 +66,16 @@ export async function khanacademy(query: string, grade: string) {
 
   console.log('Extracted Khan Academy results:', data.length);
 
-  data.map(async (item) => {
-    // Generate embeddings for each result
-    const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
-    // console.log('Generated embedding for:', embeddings);
-    item.embedding = embeddings;
-    return item;
-  });
+  // Use Promise.all to wait for all embeddings to be generated
+  await Promise.all(
+    data.map(async (item) => {
+      // Generate embeddings for each result
+      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
+      // console.log('Generated embedding for:', embeddings);
+      item.embedding = embeddings;
+      return item;
+    })
+  );
 
   console.log('Generated embeddings for Khan Academy results:', data.length);
   return data;
@@ -226,6 +228,5 @@ export async function ck12(query: string, grade: string) {
   );
 
   console.log('Generated embeddings for CK12 results:', data.length);
-  console.log('Generated embeddings for CK12 results:', data);
   return data;
 }
