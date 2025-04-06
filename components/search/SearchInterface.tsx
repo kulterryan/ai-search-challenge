@@ -4,7 +4,7 @@ import { useQueryState } from 'nuqs';
 import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { SearchResults } from './SearchResults';
-import { searchHandler } from '@/utils/search';
+import { hybridSearch } from '@/utils/search';
 
 // Define type for grade options
 type GradeOptionType = {
@@ -61,10 +61,26 @@ export const SearchInterface = () => {
     setSearchError(null);
 
     // Fetch search results
-    const data = await searchHandler(query, grade, searchAgentActions);
+    searchAgentActions.push('Searching for resources...');
+    setSearchAgentActions((prev) => [...prev, 'Searching for resources...']);
+    const data = await hybridSearch(query, grade);
 
-    // Add actions step by step with timeouts
-    // Define all messages with their timing
+    // Check for errors in the search results
+    if (data.searchError) {
+      setSearchError(data.searchError);
+      setSearchResults([]);
+      setSearchProgress(false);
+      return;
+    }
+
+    // If the search is successful, set the search results
+    setSearchResults(data.searchResults);
+    setSearchProgress(false);
+
+    if (data.searchResults.length === 0) {
+      setSearchError('No results found');
+      return;
+    }
     const messages = [
       { message: 'Looking through PBSMedia, IXL, Khan Academy, and 4 other sites...', delay: 500 },
       { message: 'Looking through 14 results on PBSMedia...', delay: 1500 }, // 500 + 1000
@@ -82,8 +98,6 @@ export const SearchInterface = () => {
       return () => clearTimeout(timer);
     });
 
-    setSearchResults(data.searchResults);
-    setSearchProgress(false);
   };
 
   return (
@@ -116,7 +130,7 @@ export const SearchInterface = () => {
         </div>
       </div>
       {/* Search agent actions area */}
-      {searchProgress && (
+      
         <div className="w-[600px] max-w-full mb-10">
           <div className="rounded-lg border border-[#e5e5ea] bg-white p-4 shadow-sm">
             <h3 className="text-lg font-medium mb-3 text-[#1c1c1e]">Astral is looking for resources...</h3>
@@ -129,7 +143,7 @@ export const SearchInterface = () => {
             </div>
           </div>
         </div>
-      )}
+      
 
       {/* Search results area */}
       {searchResults.length > 0 && <SearchResults results={searchResults} />}
