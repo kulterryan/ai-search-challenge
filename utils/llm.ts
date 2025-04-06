@@ -44,14 +44,19 @@ export async function scoreRelevance(query: string, content: SearchResult) {
   return 0;
 }
 
-async function searchContent(query: string) {
+export async function searchContent(query: string) {
   const supabase = await createClient();
 
   // 1. Convert query to embedding
   const queryEmbedding = await generateEmbeddings(query);
 
   // 2. Perform vector similarity search in Supabase
-  const { data: similarDocs } = await supabase.from('content').select('id, title, content, url, source').order('embedding <-> $1', { ascending: true }).bind(queryEmbedding).limit(10);
+  const { data: similarDocs } = await supabase.from('content').select('id, title, content, url, source').order('embedding <-> $1', { ascending: true }).limit(10).eq('1', queryEmbedding);
+
+  if (!similarDocs) {
+    console.error('No similar documents found');
+    return [];
+  }
 
   // 3. Score results with Gemini for better relevance
   const scoredResults = await Promise.all(
