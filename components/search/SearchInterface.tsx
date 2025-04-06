@@ -110,6 +110,14 @@ export const SearchInterface = () => {
       setSearchAgentActions((prev) => [...prev, 'Finalizing content...']);
 
       setSearchResults(results.searchResults);
+      if (results.searchError) {
+        setSearchError(results.searchError);
+      }
+
+      if (results.searchResults.length === 0) {
+        setSearchError('No results found');
+      }
+
       setSearchProgress(false);
     }
   };

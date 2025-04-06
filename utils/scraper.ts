@@ -32,8 +32,20 @@ async function browserScraper(url: string) {
 
 // Use Promise.all to wait for all embeddings to be generated & Save them to the data array
 async function generateEmbeddingsForResults(data: SearchResult[], query: string) {
+  // First check and filter out duplicate URLs to avoid redundant embedding generation
+  const uniqueLinks = new Set<string>();
+  const filteredData = data.filter(item => {
+    if (item.link && !uniqueLinks.has(item.link)) {
+      uniqueLinks.add(item.link);
+      return true;
+    }
+    return false;
+  });
+
+  // Use the filtered data for embedding generation
+  const dataToProcess = filteredData;
   await Promise.all(
-    data.map(async (item) => {
+    dataToProcess.map(async (item) => {
       // Generate embeddings for each result
       const { embeddings } = await generateEmbeddings(`
         Title: ${item.title},
@@ -45,7 +57,8 @@ async function generateEmbeddingsForResults(data: SearchResult[], query: string)
     })
   );
 
-  await insertResources(data);
+  const x = await insertResources(data);
+  console.log('Inserted resources into the database:', x);
 
   return data;
 }
