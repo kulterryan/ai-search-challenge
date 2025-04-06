@@ -29,6 +29,20 @@ async function browserScraper(url: string) {
   return content;
 }
 
+// Use Promise.all to wait for all embeddings to be generated
+async function generateEmbeddingsForResults(data: SearchResult[]) {
+  await Promise.all(
+    data.map(async (item) => {
+      // Generate embeddings for each result
+      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
+      item.embedding = embeddings?.[0]?.values || [];
+      return item;
+    })
+  );
+
+  return data;
+}
+
 export async function khanacademy(query: string, grade: string) {
   const updatedQuery = query + ` for Grade ` + (grade === 'all' ? '' : grade);
   // console.log('Updated query:', updatedQuery);
@@ -50,7 +64,6 @@ export async function khanacademy(query: string, grade: string) {
     const type = $elem.find('div._1ufuji7').text();
     const description = $elem.find('span._1n941cdr').text() || '';
 
-    
     if (link && title) {
       data.push({
         title,
@@ -67,15 +80,7 @@ export async function khanacademy(query: string, grade: string) {
   console.log('Extracted Khan Academy results:', data.length);
 
   // Use Promise.all to wait for all embeddings to be generated
-  await Promise.all(
-    data.map(async (item) => {
-      // Generate embeddings for each result
-      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
-      // console.log('Generated embedding for:', embeddings);
-      item.embedding = embeddings;
-      return item;
-    })
-  );
+  await generateEmbeddingsForResults(data);
 
   console.log('Generated embeddings for Khan Academy results:', data.length);
   return data;
@@ -159,16 +164,9 @@ export async function pbslearning(query: string, grade: string) {
   });
 
   console.log('Extracted PBS Learning Media results:', data.length);
-  
+
   // Use Promise.all to wait for all embeddings to be generated
-  await Promise.all(
-    data.map(async (item) => {
-      // Generate embeddings for each result
-      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
-      item.embedding = embeddings;
-      return item;
-    })
-  );
+  await generateEmbeddingsForResults(data);
 
   console.log('Generated embeddings for PBS Learning Media results:', data.length);
   return data;
@@ -181,7 +179,7 @@ export async function ck12(query: string, grade: string) {
 
   const $ = cheerio.load(content);
   console.log('Content loaded, scraping results...');
-  
+
   const data: SearchResult[] = [];
 
   $('.contentListItemStyles__Container-sc-5gkytp-0').each((index, element) => {
@@ -217,15 +215,8 @@ export async function ck12(query: string, grade: string) {
 
   console.log('Extracted CK12 results:', data.length);
 
-  // Use Promise.all to wait for all embeddings to be generated
-  await Promise.all(
-    data.map(async (item) => {
-      // Generate embeddings for each result
-      const { embeddings } = await generateEmbeddings(item.title + ' ' + item.description);
-      item.embedding = embeddings;
-      return item;
-    })
-  );
+  // Use it in the ck12 function
+  await generateEmbeddingsForResults(data);
 
   console.log('Generated embeddings for CK12 results:', data.length);
   return data;
